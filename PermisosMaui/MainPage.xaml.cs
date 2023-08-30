@@ -1,7 +1,4 @@
-﻿using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Storage;
-using System.Text;
-using System.Threading;
+﻿using System.Text;
 
 #if ANDROID
 using Android;
@@ -62,10 +59,46 @@ namespace PermisosMaui
                     }
                 }
 
-                using var stream = new MemoryStream(Encoding.Default.GetBytes("Hello from the Community Toolkit!"));
-                var fileSaverResult = await FileSaver.SaveAsync("test.txt", stream, ctk);
-                fileSaverResult.EnsureSuccess();
-                await Toast.Make($"File is saved: {fileSaverResult.FilePath}").Show(ctk);
+
+                string mainDir = Path.Combine(FileSystem.Current.AppDataDirectory, "preparacion2.txt");
+                string mainDir2 = Path.Combine(FileSystem.Current.AppDataDirectory, "alfabeto.pdf");
+
+                using Stream fileStream = await FileSystem.Current.OpenAppPackageFileAsync("alfabeto.pdf");
+
+                using var stream = new MemoryStream(Encoding.Default.GetBytes("Información de preparación"));
+
+                var streamWriter = File.Create(mainDir);
+                streamWriter.Close();
+                File.WriteAllBytes(mainDir, stream.ToArray());
+
+                //var fileSaverResult = await FileSaver.SaveAsync(mainDir,"test.txt", stream, ctk);
+                //fileSaverResult.EnsureSuccess();
+                //await Toast.Make($"File is saved: {fileSaverResult.FilePath}").Show(ctk);
+
+
+                using StreamReader reader = new StreamReader(fileStream);
+
+                byte[] dataPdf;
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    fileStream.CopyTo(ms);
+                    dataPdf = ms.ToArray();
+                }
+
+                string mainDirPdf = Path.Combine(FileSystem.Current.AppDataDirectory, "alfabeto.pdf");
+
+                var streamWriterPDF = File.Create(mainDirPdf);
+                streamWriterPDF.Close();
+                File.WriteAllBytes(mainDirPdf, dataPdf);
+
+
+                await Launcher.Default.OpenAsync(new OpenFileRequest("Preparación boys", new ReadOnlyFile(mainDirPdf)));
+
+                //await Share.Default.RequestAsync(new ShareFileRequest
+                //{
+                //    Title = "Share text file",
+                //    File = new ShareFile(mainDir)
+                //});
 
                 count++;
 
